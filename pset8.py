@@ -12,8 +12,8 @@ class ChainHashTable:
             self.size = size
             self.num_items = 0
             self.num_collisions = 0
-            self.keys = [None] * size
-            self.values = [None] * size
+            self.keys = [[] for i in range(size)]
+            self.values = [[] for i in range(size)]
         else:
             raise ValueError
 
@@ -26,51 +26,36 @@ class ChainHashTable:
         return self.num_items / self.size 
 
 
-    def get(self, key):
+    def put_helper(self, key, value):
         h_val = self.hash(key)
-        if self.keys[h_val] == key:
-            return self.values[h_val]
-        elif type(self.keys[h_val]) == type([]):
-            chain_pos = 0
-            for item in self.keys[h_val]:
-                if item == key:
-                    return self.values[h_val][chain_pos]
-                chain_pos += 1
-        raise LookupError
-                
+        if self.keys[h_val] == []:                     # slot has no key
+            self.keys[h_val].append(key)                   # add key
+            self.values[h_val].append(value)               # add value
+            self.num_items += 1
+        elif key in self.keys[h_val]:                  # slot has a list
+            i = self.keys[h_val].index(key)                # obtain index of desired key
+            if self.keys[h_val][i] == key:                 # check if list in that slot contains lst
+                self.values[h_val][i] = value                  # renew the value in the lst
+        else:                                          # key is not in the slot but there is a value 
+            self.keys[h_val].append(key)                   # append key to chain
+            self.values[h_val].append(value)               # append value to chain
+            self.num_items += 1
 
-    """
-    def put(self, key, value):
-        load_factor_limit = 1.5
-        if self.get_load_factor() <= load_factor_limit:
-            h_val = self.hash(key)
-            if self.keys[h_val] == None:                     # slot has no key
-                self.keys[h_val] = key                           # add key
-                self.values[h_val] = value                       # add value
-            elif self.keys[h_val] == key:                    # slot has the key seeking
-                self.values[h_val] = value                       # replace value
-            elif self.keys[h_val] != key:                    # slot has key, not the key seeking
-                if type(self.keys[h_val]) == type(0):            # if the key in slot is not a list
-                    self.keys[h_val] = [self.keys[h_val], key]       # reset slot key to list of 2 keys
-                    self.values[h_val] = [self.values[h_val], value] # reset slot value to list of 2 values
-                elif type(self.keys[h_val]) == type([]):
-                    self.keys[h_val].append(key)
-                    self.values[h_val].append(value)
-        self.num_items += 1
-    """
+
+    def resize(self):
+        new_h = ChainHashTable(2 * self.size + 1)
+        for slot in self.keys:
+            for item in slot:
+                h_val = self.hash(item)
+                i = self.keys[h_val].index(item)
+                new_h.put(item, self.values[h_val][i])
+        self.keys = new_h.keys
+        self.values = new_h.values
+        self.size = 2 * self.size + 1
+
 
     def put(self, key, value):
         load_factor_limit = 1.5
-        if self.get_load_factpr <= load_factor_limit:
-            h_val = self.hash(key)
-            if self.keys[h_val] == None:
-                self.keys[h_val] = [key]
-                self.values[h_val] = [value]
-            elif self.keys[h_val][0] == key:
-                self.values[h_val][0] = value
-            elif self.keys[h_val][0] != key:
-                
-
-
-
-
+        self.put_helper(key, value)
+        if self.get_load_factor() > load_factor_limit:
+            self.resize()

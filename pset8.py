@@ -36,10 +36,20 @@ class ChainHashTable:
             i = self.keys[h_val].index(key)                # obtain index of desired key
             if self.keys[h_val][i] == key:                 # check if list in that slot contains lst
                 self.values[h_val][i] = value                  # renew the value in the lst
-        else:                                          # key is not in the slot but there is a value 
+        else:                                          # key is not in the slot but there is a value
+            self.num_collisions += 1 
             self.keys[h_val].append(key)                   # append key to chain
             self.values[h_val].append(value)               # append value to chain
             self.num_items += 1
+
+
+    def get(self, key):
+        h_val = self.hash(key)
+        if key in self.keys[h_val]:
+            i = self.keys[h_val].index(key)
+            return self.values[h_val][i]
+        else:
+            raise LookupError
 
 
     def resize(self):
@@ -59,3 +69,20 @@ class ChainHashTable:
         self.put_helper(key, value)
         if self.get_load_factor() > load_factor_limit:
             self.resize()
+
+
+    def delete(self, key):
+        h_val = self.hash(key)
+        if key in self.keys[h_val]:
+            i = self.keys[h_val].index(key)
+            temp = (key, self.values[h_val][i])
+            del self.keys[h_val][i]
+            del self.values[h_val][i]
+            self.num_items -= 1
+            return temp
+        else:
+            raise LookupError
+
+
+    def get_collisions(self):
+        return self.num_collisions

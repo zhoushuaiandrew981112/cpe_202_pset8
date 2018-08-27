@@ -70,21 +70,6 @@ class Test_ChainHashTable(unittest.TestCase):
         lf = h.get_load_factor()
         self.assertEqual(lf, 0)
 
-    def BLOCK_test_get(self):
-        size = 5
-        h = ChainHashTable(size)
-        h.put(1, "1")
-        h.put(0, "0")
-        h.put(10, "10")
-        h.put(20, "20")
-
-        self.assertEqual(h.get(1), "1")
-        self.assertEqual(h.get(0), "0")
-        self.assertEqual(h.get(10), "10")
-        self.assertEqual(h.get(20), "20")
-        with self.assertRaises(LookupError):
-            h.get(100)
-
     def test_put_helper(self): 
         size = 5
         h = ChainHashTable(size)
@@ -215,6 +200,103 @@ class Test_ChainHashTable(unittest.TestCase):
         self.assertEqual(h.values, exp_values)
 
         self.assertEqual(h.num_items, 8)
+
+    def test_get(self):
+        size = 5
+        h = ChainHashTable(size)
+        h.put(1, "1")
+        h.put(0, "0")
+        h.put(10, "10")
+        h.put(20, "20")
+
+        self.assertEqual(h.get(1), "1")
+        self.assertEqual(h.get(0), "0")
+        self.assertEqual(h.get(10), "10")
+        self.assertEqual(h.get(20), "20")
+        with self.assertRaises(LookupError):
+            h.get(100)
+
+
+    def test_delete(self):
+         
+        size = 5
+        h = ChainHashTable(size)
+
+        h.put(1, "1")
+        self.assertEqual(h.num_items, 1)
+        h.put(0, "0")
+        self.assertEqual(h.num_items, 2)
+        h.put(10, "10")
+        self.assertEqual(h.num_items, 3)
+        h.put(20, "20")
+        self.assertEqual(h.num_items, 4)
+        h.put(30, "30")
+        self.assertEqual(h.num_items, 5)
+        h.put(40, "40")
+        self.assertEqual(h.num_items, 6)
+        h.put(50, "50")
+        self.assertEqual(h.num_items, 7)
+
+        self.assertEqual(h.keys, [[0, 10, 20, 30, 40, 50], [1], [], [], []])
+        self.assertEqual(h.values, [["0", "10", "20", "30", "40", "50"], ["1"], [], [], []])
+
+        h.delete(50)
+        self.assertEqual(h.num_items, 6)
+        h.delete(40)
+        self.assertEqual(h.num_items, 5)
+        h.delete(30)
+        self.assertEqual(h.num_items, 4)
+
+        self.assertEqual(h.keys, [[0, 10, 20], [1], [], [], []])
+        self.assertEqual(h.values, [["0", "10", "20"], ["1"], [], [], []])
+
+        h.delete(20)
+        self.assertEqual(h.num_items, 3)
+
+        self.assertEqual(h.keys, [[0, 10], [1], [], [], []])
+        self.assertEqual(h.values, [["0", "10"], ["1"], [], [], []])
+
+        h.delete(10)
+        self.assertEqual(h.num_items, 2)
+
+        self.assertEqual(h.keys, [[0], [1], [], [], []])
+        self.assertEqual(h.values, [["0"], ["1"], [], [], []])
+
+        h.delete(0)
+
+        self.assertEqual(h.keys, [[], [1], [], [], []])
+        self.assertEqual(h.values, [[], ["1"], [], [], []])
+
+        with self.assertRaises(LookupError):
+            h.delete(100)
+
+    def test_get_collisions(self):
+        
+        size = 5
+        h = ChainHashTable(size)
+
+        h.put(1, "1")
+        self.assertEqual(h.num_items, 1)
+        self.assertEqual(h.get_collisions(), 0)
+        h.put(0, "0")
+        self.assertEqual(h.num_items, 2)
+        self.assertEqual(h.get_collisions(), 0)
+        h.put(10, "10")
+        self.assertEqual(h.num_items, 3)
+        self.assertEqual(h.get_collisions(), 1)
+        h.put(20, "20")
+        self.assertEqual(h.num_items, 4)
+        self.assertEqual(h.get_collisions(), 2)
+        h.put(30, "30")
+        self.assertEqual(h.num_items, 5)
+        self.assertEqual(h.get_collisions(), 3)
+        h.put(40, "40")
+        self.assertEqual(h.num_items, 6)
+        self.assertEqual(h.get_collisions(), 4)
+        h.put(50, "50")
+        self.assertEqual(h.num_items, 7)
+        self.assertEqual(h.get_collisions(), 5)
+
 
 
 
